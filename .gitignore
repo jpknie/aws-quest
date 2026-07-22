@@ -4,3 +4,4 @@ bin/
 lib/
 include/
 tests/__pycache__/**
+src/aws_quest/__pycache__/**
