@@ -3,3 +3,4 @@ bin/
 .venv
 lib/
 include/
+tests/__pycache__/**
