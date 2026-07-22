@@ -1,0 +1,13 @@
+[
+  {
+    "prompt": "Which AWS service is object storage?",
+    "difficulty": "easy",
+    "choices": [
+      { "id": "A", "text": "Amazon S3" },
+      { "id": "B", "text": "Amazon EC2" },
+      { "id": "C", "text": "Amazon RDS" },
+      { "id": "D", "text": "AWS Lambda" }
+    ],
+    "correct_choice_ids": ["A"]
+  }
+]
