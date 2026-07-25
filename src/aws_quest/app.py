@@ -10,7 +10,9 @@ from .domain import (
     Node,
     Direction,
     Edge
-) 
+)
+
+from .lights import LightLayer
 
 import random
 import json
@@ -70,18 +72,20 @@ class RogueQuest:
     root: Node
     screen: pygame.Surface
     leaves: list[Node]
+    light_layer: LightLayer
     scroll_y: int
     scroll_x: int
     
     def __init__(self):
         self.player = None
+        self.light_layer = LightLayer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT)
         self.scroll_x = 0
         self.scroll_y = 0
         self.world_grid = [
             [WALL for x in range(WORLD_WIDTH_TILES)]
             for y in range(WORLD_HEIGHT_TILES)
         ]
-        print("Starting AWS Quest...")
+        print("Starting Rogue Quest...")
         pygame.init()
         self.screen = pygame.display.set_mode((VIEWPORT_WIDTH, VIEWPORT_HEIGHT))
         self.root = Node(Rect(0, 0, WORLD_WIDTH_TILES, WORLD_HEIGHT_TILES))
@@ -93,19 +97,23 @@ class RogueQuest:
         self.edges = self.generate_edges()
         self.init_world()
         self.player = self.init_player(self.rooms[1])
-        self.enter_loop(self.screen)
+        self.game_loop(self.screen)
+        self.running = False
 
     def init_player(self, room):
         rx,ry,rw,rh = room
         return Player((rx + rw//2) // TILE_WIDTH_PIXELS, (ry + rh//2) // TILE_HEIGHT_PIXELS)
 
     def init_world(self):
+        self.light_layer.add_light((50, 50))
+        self.light_layer.add_light((40, 40))
+        print(f"Lights: {self.light_layer.get_lights()}")
+
         for i in range(WORLD_WIDTH_TILES):
             for j in range(WORLD_HEIGHT_TILES):
                 self.world_grid[j][i] = FLOOR
         
         for room in self.rooms:
-            door_gen = False
             rx, ry, rw, rh = room
             for y in range(ry, ry + rh):
                 for x in range(rx, rx + rw):
@@ -119,10 +127,8 @@ class RogueQuest:
                         self.world_grid[y][x] = WALL
                     else:
                         self.world_grid[y][x] = FLOOR
-            if door_gen == False:
-                (door_x, door_y) = self.get_door_coord(random.choice(["top","left","right","bottom"]), rx, ry, rw, rh)
-                self.world_grid[door_y][door_x] = DOOR
-                door_gen = True
+            (door_x, door_y) = self.get_door_coord(random.choice(["top","left","right","bottom"]), rx, ry, rw, rh)
+            self.world_grid[door_y][door_x] = DOOR
         
     def draw_edges(self):
         c = pygame.Color(0,101,0)
@@ -146,66 +152,64 @@ class RogueQuest:
             door_x = random.randint(tx + 1, tx + tw - 2)
         return (door_x, door_y)
 
-    def enter_loop(self, screen):
-        layer = pygame.Surface((VIEWPORT_WIDTH, VIEWPORT_HEIGHT))
-        layer.fill((0, 255, 255))
-        circle = (10,10)
-        circle_radius = 10
-        pygame.draw.circle(layer, (255, 255, 255), circle, circle_radius)
-        clock = pygame.time.Clock()
-        running = True
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN:
+                match event.key:
+                    case pygame.K_a:
+                        self.player.move_left()
+                    case pygame.K_d:
+                        self.player.move_right()
+                    case pygame.K_s:
+                        self.player.move_down()
+                    case pygame.K_w:
+                        self.player.move_up()
+                    case pygame.K_DOWN:
+                        self.scroll_y += 1 if self.scroll_y <= WORLD_HEIGHT_TILES else WORLD_HEIGHT_TILES
+                    case pygame.K_UP:
+                        self.scroll_y -= 1 if self.scroll_y >= 0 else 0
+                    case pygame.K_LEFT:
+                        self.scroll_x -= 1 if self.scroll_x >= 0 else 0
+                    case pygame.K_RIGHT:
+                        self.scroll_x += 1 if self.scroll_x <= WORLD_WIDTH_TILES else WORLD_WIDTH_TILES
+
+    def render_tiles(self, screen):
         c = pygame.Color(105,100,50)
-            
-        while running:
+        for y in range(self.scroll_y, WORLD_HEIGHT_TILES):
+            for x in range(self.scroll_x, WORLD_WIDTH_TILES):
+                tile = self.world_grid[y][x]
+                if tile == FLOOR:
+                    c = pygame.Color(50,50,50)
+                if tile == WALL:
+                    c = pygame.Color(70,70,70)
+                if tile == DOOR:
+                    c = pygame.Color(0,255,0)
+                tile_rect = ((x - self.scroll_x) * TILE_WIDTH_PIXELS, (y - self.scroll_y) * TILE_HEIGHT_PIXELS, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS) 
+                pygame.draw.rect(screen, c, tile_rect)
+
+    def game_loop(self, screen):
+        clock = pygame.time.Clock()
+        self.running = True
+        print("Entering game loop..")
+        while self.running:
             # poll for events
             # pygame.QUIT event means the user clicked X to close your window
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.KEYDOWN:
-                    match event.key:
-                        case pygame.K_a:
-                            self.player.move_left()
-                        case pygame.K_d:
-                            self.player.move_right()
-                        case pygame.K_s:
-                            self.player.move_down()
-                        case pygame.K_w:
-                            self.player.move_up()
-                        case pygame.K_DOWN:
-                            self.scroll_y += 1 if self.scroll_y <= WORLD_HEIGHT_TILES else WORLD_HEIGHT_TILES
-                        case pygame.K_UP:
-                            self.scroll_y -= 1 if self.scroll_y >= 0 else 0
-                        case pygame.K_LEFT:
-                            self.scroll_x -= 1 if self.scroll_x >= 0 else 0
-                        case pygame.K_RIGHT:
-                            self.scroll_x += 1 if self.scroll_x <= WORLD_WIDTH_TILES else WORLD_WIDTH_TILES
-
+            self.handle_events()
             # fill the screen with a color to wipe away anything from last frame
             screen.fill("black")
+            self.render_tiles(screen)
             
-            for y in range(self.scroll_y, WORLD_HEIGHT_TILES):
-                for x in range(self.scroll_x, WORLD_WIDTH_TILES):
-                    tile = self.world_grid[y][x]
-                    if tile == FLOOR:
-                        c = pygame.Color(50,50,50)
-                    if tile == WALL:
-                        c = pygame.Color(70,70,70)
-                    if tile == DOOR:
-                        c = pygame.Color(0,255,0)
-                    tile_rect = ((x - self.scroll_x) * TILE_WIDTH_PIXELS, (y - self.scroll_y) * TILE_HEIGHT_PIXELS, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS) 
-                    pygame.draw.rect(screen, c, tile_rect)
-
-            self.screen.blit(layer, (10, 10), special_flags=pygame.BLEND_RGBA_MULT)
-            # RENDER YOUR GAME HERE
             pw = TILE_WIDTH_PIXELS
             ph = TILE_HEIGHT_PIXELS
             px = self.player.get_x()
             py = self.player.get_y()
+            layer=self.light_layer.draw_player_light((px * TILE_WIDTH_PIXELS, py * TILE_HEIGHT_PIXELS))
+            self.screen.blit(layer, (self.scroll_x, self.scroll_y), special_flags=pygame.BLEND_RGBA_MULT)
+         
             pygame.draw.rect(self.screen, pygame.Color(150, 0, 0), (px * TILE_WIDTH_PIXELS, py * TILE_HEIGHT_PIXELS, pw, ph))
-            # flip() the display to put your work on screen
             pygame.display.flip()
-
             clock.tick(60)  # limits FPS to 60
 
         pygame.quit()
@@ -228,7 +232,6 @@ class RogueQuest:
         if difficulty == "hard":
             return 10
         raise ValueError(f"Unknown difficulty: {difficulty}")
-
 
     def load_questions(path: str) -> list[Question]:
         with open(path, 'r', encoding='utf-8') as file:
@@ -284,7 +287,6 @@ class RogueQuest:
         self.generate_world(node.left)
         self.generate_world(node.right)
 
-
     def collect_leaves(self, node: Node):
         if node.left is None and node.right is None:
             self.leaves.append(node)
@@ -301,7 +303,6 @@ class RogueQuest:
                 distance = distance_between(self.rooms[i], self.rooms[j])
                 edges.append(Edge(i, j, direction, distance))
         return edges
-
 
 if __name__ == "__main__":
     main()
