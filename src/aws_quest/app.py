@@ -25,8 +25,8 @@ MIN_LEAF_SIZE = 10
 VIEWPORT_WIDTH = 1280
 VIEWPORT_HEIGHT = 720
 
-WORLD_WIDTH_TILES = 400
-WORLD_HEIGHT_TILES = 400
+WORLD_WIDTH_TILES = 50
+WORLD_HEIGHT_TILES = 50
 ROOM_MARGIN = 1
 
 TILE_WIDTH_PIXELS = 32
@@ -73,14 +73,14 @@ class RogueQuest:
     screen: pygame.Surface
     leaves: list[Node]
     light_layer: LightLayer
-    scroll_y: int
-    scroll_x: int
+    cam_y: int
+    cam_x: int
     
     def __init__(self):
         self.player = None
         self.light_layer = LightLayer(VIEWPORT_WIDTH, VIEWPORT_HEIGHT)
-        self.scroll_x = 0
-        self.scroll_y = 0
+        self.cam_x = 0
+        self.cam_y = 0
         self.world_grid = [
             [WALL for x in range(WORLD_WIDTH_TILES)]
             for y in range(WORLD_HEIGHT_TILES)
@@ -152,6 +152,72 @@ class RogueQuest:
             door_x = random.randint(tx + 1, tx + tw - 2)
         return (door_x, door_y)
 
+    # cam_rect: (x, y, width, height)
+    def move_camera_based_player(self, cam_rect:(int, int, int, int)):
+        should_move_cam_left=False
+        should_move_cam_right=False
+        should_move_cam_up=False
+        should_move_cam_down=False
+        (camx,camy,camw,camh) = cam_rect
+        (px, py) = (self.player.get_x() * TILE_WIDTH_PIXELS, self.player.get_y() * TILE_HEIGHT_PIXELS)
+        print(f"player {px},{py}, cam_rect: {camx}, {camy}, {camh}, {camw}")
+        # CASE 1: player is 2 tiles from the left edge - cam should move left
+        # CASE 2: player is 2 tiles from the right edge - cam should move right
+        # CASE 3: player is 2 tiles from top of the edge - cam should move up
+        # CASE 4: player is 2 tiles from bottom of the edge - cam should move down
+
+        # CORNER CASES: don't move camera if player is at the corners: topleft, topright, bottomleft, bottomright
+
+        world_width_px=WORLD_WIDTH_TILES * TILE_WIDTH_PIXELS
+        world_height_px=WORLD_HEIGHT_TILES * TILE_HEIGHT_PIXELS
+
+        topleft_rect = (0, 0, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS)
+        bottomleft_rect = (0, world_height_px - TILE_HEIGHT_PIXELS, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS)
+        bottomright_rect = (world_width_px - TILE_WIDTH_PIXELS, world_height_px - TILE_HEIGHT_PIXELS, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS)
+        topright_rect = (world_width_px - TILE_WIDTH_PIXELS, 0, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS)
+
+        cx = px + (TILE_WIDTH_PIXELS // 2)
+        cy = py + (TILE_HEIGHT_PIXELS // 2)
+
+        topleft = self.within_rectangle((cx, cy), topleft_rect)
+        bottomleft = self.within_rectangle((cx, cy), bottomleft_rect)
+        bottomright = self.within_rectangle((cx, cy), bottomright_rect)
+        topright = self.within_rectangle((cx, cy), topright_rect)
+
+        if topleft or bottomleft or bottomright or topright:
+            return # we do not move camera in the corners
+
+        screen_px = px - self.cam_x * TILE_WIDTH_PIXELS
+        screen_py = py - self.cam_y * TILE_HEIGHT_PIXELS
+
+        margin_x = 2 * TILE_WIDTH_PIXELS
+        margin_y = 2 * TILE_HEIGHT_PIXELS
+
+        max_cam_x = WORLD_WIDTH_TILES - VIEWPORT_WIDTH // TILE_WIDTH_PIXELS
+        max_cam_y = WORLD_HEIGHT_TILES - VIEWPORT_HEIGHT // TILE_HEIGHT_PIXELS
+
+        # Player approaches right edge
+        if screen_px >= VIEWPORT_WIDTH - margin_x:
+            self.cam_x = min(self.cam_x + 1, max_cam_x)
+
+        # Player approaches left edge
+        elif screen_px <= margin_x:
+            self.cam_x = max(self.cam_x - 1, 0)
+
+        # Player approaches bottom edge
+        if screen_py >= VIEWPORT_HEIGHT - margin_y:
+            self.cam_y = min(self.cam_y + 1, max_cam_y)
+
+        # Player approaches top edge
+        elif screen_py <= margin_y:
+            self.cam_y = max(self.cam_y - 1, 0)
+
+    # returns true if within rectangle
+    def within_rectangle(self, point, rect):
+        (px, py) = point
+        (x, y, width, height) = rect
+        return px >= x and px <= x + width and py >= y and py <= y + height
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -167,18 +233,19 @@ class RogueQuest:
                     case pygame.K_w:
                         self.player.move_up()
                     case pygame.K_DOWN:
-                        self.scroll_y += 1 if self.scroll_y <= WORLD_HEIGHT_TILES else WORLD_HEIGHT_TILES
+                        self.cam_y += 1 if self.cam_y <= WORLD_HEIGHT_TILES else WORLD_HEIGHT_TILES
                     case pygame.K_UP:
-                        self.scroll_y -= 1 if self.scroll_y >= 0 else 0
+                        self.cam_y -= 1 if self.cam_y >= 0 else 0
                     case pygame.K_LEFT:
-                        self.scroll_x -= 1 if self.scroll_x >= 0 else 0
+                        self.cam_x -= 1 if self.cam_x >= 0 else 0
                     case pygame.K_RIGHT:
-                        self.scroll_x += 1 if self.scroll_x <= WORLD_WIDTH_TILES else WORLD_WIDTH_TILES
-
+                        self.cam_x += 1 if self.cam_x <= WORLD_WIDTH_TILES else WORLD_WIDTH_TILES
+                self.move_camera_based_player((self.cam_x * TILE_WIDTH_PIXELS, self.cam_y * TILE_HEIGHT_PIXELS, VIEWPORT_WIDTH, VIEWPORT_HEIGHT)) 
+                
     def render_tiles(self, screen):
         c = pygame.Color(105,100,50)
-        for y in range(self.scroll_y, WORLD_HEIGHT_TILES):
-            for x in range(self.scroll_x, WORLD_WIDTH_TILES):
+        for y in range(self.cam_y, WORLD_HEIGHT_TILES):
+            for x in range(self.cam_x, WORLD_WIDTH_TILES):
                 tile = self.world_grid[y][x]
                 if tile == FLOOR:
                     c = pygame.Color(50,50,50)
@@ -186,7 +253,7 @@ class RogueQuest:
                     c = pygame.Color(70,70,70)
                 if tile == DOOR:
                     c = pygame.Color(0,255,0)
-                tile_rect = ((x - self.scroll_x) * TILE_WIDTH_PIXELS, (y - self.scroll_y) * TILE_HEIGHT_PIXELS, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS) 
+                tile_rect = ((x - self.cam_x) * TILE_WIDTH_PIXELS, (y - self.cam_y) * TILE_HEIGHT_PIXELS, TILE_WIDTH_PIXELS, TILE_HEIGHT_PIXELS) 
                 pygame.draw.rect(screen, c, tile_rect)
 
     def game_loop(self, screen):
@@ -205,10 +272,10 @@ class RogueQuest:
             ph = TILE_HEIGHT_PIXELS
             px = self.player.get_x()
             py = self.player.get_y()
-            layer=self.light_layer.draw_player_light((px * TILE_WIDTH_PIXELS, py * TILE_HEIGHT_PIXELS))
-            self.screen.blit(layer, (self.scroll_x, self.scroll_y), special_flags=pygame.BLEND_RGBA_MULT)
+            layer=self.light_layer.draw_player_light(((px - self.cam_x) * TILE_WIDTH_PIXELS, (py - self.cam_y) * TILE_HEIGHT_PIXELS))
+            self.screen.blit(layer, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
          
-            pygame.draw.rect(self.screen, pygame.Color(150, 0, 0), (px * TILE_WIDTH_PIXELS, py * TILE_HEIGHT_PIXELS, pw, ph))
+            pygame.draw.rect(self.screen, pygame.Color(150, 0, 0), ((px - self.cam_x) * TILE_WIDTH_PIXELS, (py - self.cam_y) * TILE_HEIGHT_PIXELS, pw, ph))
             pygame.display.flip()
             clock.tick(60)  # limits FPS to 60
 

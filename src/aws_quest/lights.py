@@ -24,10 +24,12 @@ class LightLayer:
 
     def draw_player_light(self, player_coord):
         (px, py) = player_coord
+        sx = px + 16
+        sy = py + 16
         #print(f"Drawing player light at {px}, {py}")
-        pygame.draw.circle(self.layer, self.falloff1, player_coord, self.circle_radius)
-        pygame.draw.circle(self.layer, self.falloff2, player_coord, self.circle2_radius)
-        pygame.draw.circle(self.layer, self.falloff3, player_coord, self.circle3_radius)
+        pygame.draw.circle(self.layer, self.falloff1, (sx, sy), self.circle_radius)
+        pygame.draw.circle(self.layer, self.falloff2, (sx, sy), self.circle2_radius)
+        pygame.draw.circle(self.layer, self.falloff3, (sx, sy), self.circle3_radius)
         return self.layer
 
 
