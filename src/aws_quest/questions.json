@@ -1,0 +1,167 @@
+[
+  {
+    "prompt": "Which AWS service provides object storage?",
+    "difficulty": "easy",
+    "choices": [
+      {"id": "A", "text": "Amazon S3"},
+      {"id": "B", "text": "Amazon EC2"},
+      {"id": "C", "text": "Amazon RDS"},
+      {"id": "D", "text": "AWS Lambda"}
+    ],
+    "correct_choice_ids": ["A"]
+  },
+  {
+    "prompt": "Which AWS service lets you run virtual machines in the cloud?",
+    "difficulty": "easy",
+    "choices": [
+      {"id": "A", "text": "Amazon EC2"},
+      {"id": "B", "text": "Amazon S3"},
+      {"id": "C", "text": "Amazon Route 53"},
+      {"id": "D", "text": "Amazon CloudFront"}
+    ],
+    "correct_choice_ids": ["A"]
+  },
+  {
+    "prompt": "Which service records AWS API activity for auditing?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "Amazon CloudWatch"},
+      {"id": "B", "text": "AWS CloudTrail"},
+      {"id": "C", "text": "AWS Config"},
+      {"id": "D", "text": "AWS Trusted Advisor"}
+    ],
+    "correct_choice_ids": ["B"]
+  },
+  {
+    "prompt": "Which service is primarily used for metrics, alarms, logs, and operational monitoring?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "AWS CloudTrail"},
+      {"id": "B", "text": "AWS Artifact"},
+      {"id": "C", "text": "Amazon CloudWatch"},
+      {"id": "D", "text": "AWS Organizations"}
+    ],
+    "correct_choice_ids": ["C"]
+  },
+  {
+    "prompt": "Which AWS service can continuously record resource configurations and evaluate them against rules?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "AWS Config"},
+      {"id": "B", "text": "AWS Shield"},
+      {"id": "C", "text": "Amazon Inspector"},
+      {"id": "D", "text": "AWS Budgets"}
+    ],
+    "correct_choice_ids": ["A"]
+  },
+  {
+    "prompt": "A security group is best described as what?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "A stateless subnet firewall"},
+      {"id": "B", "text": "A stateful virtual firewall for resources such as EC2 instances"},
+      {"id": "C", "text": "An IAM password policy"},
+      {"id": "D", "text": "A physical firewall in an Availability Zone"}
+    ],
+    "correct_choice_ids": ["B"]
+  },
+  {
+    "prompt": "How do network ACLs differ from security groups?",
+    "difficulty": "hard",
+    "choices": [
+      {"id": "A", "text": "Network ACLs are stateful and security groups are stateless"},
+      {"id": "B", "text": "Both are always stateful"},
+      {"id": "C", "text": "Network ACLs are stateless while security groups are stateful"},
+      {"id": "D", "text": "Network ACLs only protect S3 buckets"}
+    ],
+    "correct_choice_ids": ["C"]
+  },
+  {
+    "prompt": "Which service provides DNS registration and routing for internet domains?",
+    "difficulty": "easy",
+    "choices": [
+      {"id": "A", "text": "Amazon Route 53"},
+      {"id": "B", "text": "Amazon VPC"},
+      {"id": "C", "text": "AWS Direct Connect"},
+      {"id": "D", "text": "Amazon SQS"}
+    ],
+    "correct_choice_ids": ["A"]
+  },
+  {
+    "prompt": "Which AWS service runs code in response to events without you managing servers?",
+    "difficulty": "easy",
+    "choices": [
+      {"id": "A", "text": "Amazon EC2"},
+      {"id": "B", "text": "AWS Lambda"},
+      {"id": "C", "text": "Amazon EBS"},
+      {"id": "D", "text": "Amazon RDS"}
+    ],
+    "correct_choice_ids": ["B"]
+  },
+  {
+    "prompt": "Which service is a managed message queue often used to decouple application components?",
+    "difficulty": "easy",
+    "choices": [
+      {"id": "A", "text": "Amazon SNS"},
+      {"id": "B", "text": "Amazon SQS"},
+      {"id": "C", "text": "Amazon SES"},
+      {"id": "D", "text": "Amazon EFS"}
+    ],
+    "correct_choice_ids": ["B"]
+  },
+  {
+    "prompt": "Which AWS service delivers cached content from edge locations close to users?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "Amazon CloudFront"},
+      {"id": "B", "text": "AWS CloudFormation"},
+      {"id": "C", "text": "AWS CloudTrail"},
+      {"id": "D", "text": "Amazon Redshift"}
+    ],
+    "correct_choice_ids": ["A"]
+  },
+  {
+    "prompt": "Under the AWS shared responsibility model, who is responsible for patching the guest operating system on an Amazon EC2 instance?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "AWS"},
+      {"id": "B", "text": "The customer"},
+      {"id": "C", "text": "The internet service provider"},
+      {"id": "D", "text": "AWS Support"}
+    ],
+    "correct_choice_ids": ["B"]
+  },
+  {
+    "prompt": "Which AWS service provides recommendations and checks for areas such as cost optimization, performance, and security?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "AWS Trusted Advisor"},
+      {"id": "B", "text": "AWS CloudTrail"},
+      {"id": "C", "text": "Amazon Athena"},
+      {"id": "D", "text": "AWS Step Functions"}
+    ],
+    "correct_choice_ids": ["A"]
+  },
+  {
+    "prompt": "Which AWS feature provides information about events that may affect your specific AWS resources and account?",
+    "difficulty": "hard",
+    "choices": [
+      {"id": "A", "text": "AWS Health Dashboard"},
+      {"id": "B", "text": "Amazon QuickSight"},
+      {"id": "C", "text": "AWS Artifact"},
+      {"id": "D", "text": "AWS CodeCommit"}
+    ],
+    "correct_choice_ids": ["A"]
+  },
+  {
+    "prompt": "What is an AWS Availability Zone?",
+    "difficulty": "medium",
+    "choices": [
+      {"id": "A", "text": "A billing boundary containing every AWS Region"},
+      {"id": "B", "text": "One or more discrete data centers with redundant power, networking, and connectivity within a Region"},
+      {"id": "C", "text": "An edge cache used only by S3"},
+      {"id": "D", "text": "A customer-owned data center connected to AWS"}
+    ],
+    "correct_choice_ids": ["B"]
+  }
+]

@@ -1,5 +1,11 @@
-from aws_quest.app import RogueQuest
-from aws_quest.domain import Question, Choice, Edge, DisjointSet, Direction
+from aws_quest.app import (
+    RogueQuest,
+    calculate_damage,
+    is_correct_answer,
+    load_questions,
+    normalize_answer,
+)
+from aws_quest.domain import Choice, Direction, DisjointSet, Edge, Question, Rect
 
 __all__ = [
     "RogueQuest",
@@ -9,5 +15,8 @@ __all__ = [
     "DisjointSet",
     "Direction",
     "Rect",
+    "normalize_answer",
+    "is_correct_answer",
+    "calculate_damage",
+    "load_questions",
 ]
-
